@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KITE Dashboard - Google Sheets Integration</title>
+    <title>KITE Dashboard - Google Sheets</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -82,12 +82,12 @@
     </div>
     
     <div class="table-wrapper">
-         <table>
+        <table>
             <thead>
                 <tr><th>Nama Perusahaan</th><th>Kantor Pengawas</th><th>Jenis NIPER</th><th>Status</th><th>Sektor Industri</th><th>SKEP Awal</th><th>Aksi</th></tr>
             </thead>
             <tbody id="tableBody"><tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-pulse"></i> Mengambil data...</td></tr></tbody>
-         </table>
+        </table>
     </div>
     
     <footer>
@@ -140,7 +140,8 @@
 </div>
 
 <script>
-    // ⚠️ GANTI URL INI DENGAN WEB APP ANDA ⚠️
+    // ================= ⚠️ GANTI URL INI DENGAN WEB APP ANDA ⚠️ =================
+    // Contoh: const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz_xxxxxxxxxxxx/exec";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwLsQSrzns9ms_BNaDWaAlvetemPjxvkaOZzzc7a1o/dev";
     const ADMIN_PASSWORD = "rahasia123";
     
@@ -166,6 +167,7 @@
         
         try {
             const response = await fetch(`${WEB_APP_URL}?${params.toString()}`, { method: "GET", mode: "cors" });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return await response.json();
         } catch (error) {
             console.error("Fetch error:", error);
@@ -181,7 +183,9 @@
             updateConnectionStatus(true, `Tersambung (${allData.length} data)`);
         } else {
             updateConnectionStatus(false, result.message || "Gagal koneksi");
-            document.getElementById("tableBody").innerHTML = `<tr><td colspan="7" class="loading" style="color:#dc2626;">Error: ${result.message}<br>Pastikan URL Web App sudah benar</td></tr>`;
+            let errMsg = result.message || "Unknown error";
+            if (errMsg.includes("Failed to fetch")) errMsg = "Tidak dapat terhubung ke Google Apps Script. Pastikan URL sudah benar dan Web App sudah di-deploy.";
+            document.getElementById("tableBody").innerHTML = `<tr><td colspan="7" class="loading" style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Error: ${errMsg}<br><br>🔧 Solusi:<br>1. Buka Apps Script dan deploy ulang Web App<br>2. Pastikan access = "Anyone"<br>3. Ganti URL di file HTML dengan URL yang baru<br>4. Upload ulang file HTML ke GitHub</td></tr>`;
         }
     }
     
