@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KITE Dashboard - Google Sheets Integration</title>
+    <title>KITE Dashboard - Fitur Edit Mode</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: #f0f2f5; padding: 20px 16px; }
+        body { background: #f0f2f5; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 24px; gap: 12px; }
         h1 { font-size: 1.5rem; background: linear-gradient(135deg, #1e3c72, #2b4c7c); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .btn { background: #2b6cb0; color: white; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn { background: #2b6cb0; color: white; border: none; padding: 8px 18px; border-radius: 40px; cursor: pointer; transition: 0.2s; }
         .btn:hover { opacity: 0.85; }
         .btn-danger { background: #dc2626; }
         .btn-refresh { background: #4b5563; }
@@ -24,13 +24,13 @@
         .chart-card { background: white; border-radius: 22px; padding: 12px; border: 1px solid #e9edf2; }
         .chart-title { font-weight: 600; margin-bottom: 8px; border-left: 4px solid #3b82f6; padding-left: 10px; font-size: 0.9rem; }
         .chart-container { width: 100%; height: 180px; }
-        .search-bar { background: white; padding: 8px 16px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; gap: 10px; margin-bottom: 16px; }
-        .search-bar input { flex: 1; border: none; outline: none; font-size: 0.85rem; }
-        .table-wrapper { overflow-x: auto; background: white; border-radius: 20px; border: 1px solid #ecf3fa; }
+        .search-bar { background: white; padding: 8px 16px; border-radius: 50px; border: 1px solid #ccc; display: flex; gap: 10px; margin-bottom: 16px; }
+        .search-bar input { flex: 1; border: none; outline: none; }
+        .table-wrapper { overflow-x: auto; background: white; border-radius: 20px; border: 1px solid #e9edf2; }
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-        th { background: #f8fafc; padding: 10px 6px; text-align: left; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
-        td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        tr { cursor: pointer; transition: background 0.1s; }
+        th { background: #f8fafc; padding: 10px; text-align: left; }
+        td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; }
+        tr { cursor: pointer; }
         tr:hover { background: #fefce8; }
         .badge { display: inline-block; padding: 3px 8px; border-radius: 40px; font-size: 0.65rem; font-weight: 600; }
         .badge-aktif { background: #dcfce7; color: #15803d; }
@@ -39,19 +39,30 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; border-radius: 28px; width: 90%; max-width: 850px; max-height: 85vh; overflow-y: auto; padding: 24px; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .close { font-size: 28px; cursor: pointer; color: #64748b; }
-        .close:hover { color: #ef4444; }
+        .close { font-size: 28px; cursor: pointer; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
         .form-field { display: flex; flex-direction: column; margin-bottom: 8px; }
-        .form-field label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #64748b; }
-        .form-field input, .form-field select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 20px; margin-top: 4px; font-size: 0.8rem; outline: none; }
-        .form-field input:focus { border-color: #3b82f6; }
+        .form-field label { font-size: 0.7rem; font-weight: 600; color: #64748b; }
+        .form-field input { padding: 8px 12px; border: 1px solid #ccc; border-radius: 20px; margin-top: 4px; }
         .action-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
-        .loading { text-align: center; padding: 40px; color: #6c757d; }
-        footer { text-align: center; font-size: 0.7rem; margin-top: 24px; color: #6c757d; }
-        .status-connected { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; }
-        .status-disconnected { background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; }
-        @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+        .loading { text-align: center; padding: 40px; color: gray; }
+        footer { text-align: center; font-size: 0.7rem; margin-top: 24px; color: #94a3b8; }
+        .status-connected { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; display: inline-block; }
+        .status-disconnected { background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; display: inline-block; }
+        .highlight-stat { background: #e0f2fe; border-left: 4px solid #0284c7; }
+        
+        /* Toggle Switch Style */
+        .edit-mode-container { display: flex; align-items: center; gap: 12px; background: white; padding: 6px 16px; border-radius: 40px; border: 1px solid #e2e8f0; }
+        .edit-mode-label { font-size: 0.8rem; font-weight: 600; color: #475569; }
+        .toggle-switch { position: relative; display: inline-block; width: 52px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: 0.3s; border-radius: 34px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; }
+        input:checked + .toggle-slider { background-color: #2b6cb0; }
+        input:checked + .toggle-slider:before { transform: translateX(26px); }
+        .edit-mode-active { background: #dcfce7; color: #15803d; border: 1px solid #15803d; }
+        .edit-mode-inactive { background: #f1f5f9; color: #64748b; }
+        .action-cell { min-width: 100px; }
     </style>
 </head>
 <body>
@@ -61,19 +72,39 @@
             <h1><i class="fas fa-chalkboard-user"></i> KITE DASHBOARD</h1>
             <div id="connectionStatus" class="status-disconnected"><i class="fas fa-plug"></i> Menghubungkan...</div>
         </div>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="edit-mode-container" id="editModeContainer">
+                <span class="edit-mode-label"><i class="fas fa-lock"></i> Mode Edit</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="editModeToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span id="editModeStatus" style="font-size:0.7rem; color:#64748b;">(Nonaktif)</span>
+            </div>
             <button class="btn btn-refresh" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
             <button class="btn" id="openAddBtn"><i class="fas fa-plus"></i> Tambah Data</button>
         </div>
     </div>
     
-    <div class="stats-grid" id="statsCards"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Memuat data...</div></div>
+    <!-- Baris Statistik Utama -->
+    <div class="stats-grid" id="statsCards"></div>
+    
+    <!-- Baris tambahan: Statistik Aktif per Jenis NIPER -->
+    <div class="stats-grid" id="aktifNiperStats" style="margin-bottom: 24px;"></div>
     
     <div class="charts-row">
-        <div class="chart-card"><div class="chart-title"><i class="fas fa-chart-pie"></i> Status Fasilitas</div><canvas id="statusChart" class="chart-container"></canvas></div>
-        <div class="chart-card"><div class="chart-title"><i class="fas fa-industry"></i> Top Sektor Industri</div><canvas id="sektorChart" class="chart-container"></canvas></div>
-        <div class="chart-card"><div class="chart-title"><i class="fas fa-map-marker-alt"></i> Kantor Pengawas</div><canvas id="wilayahChart" class="chart-container"></canvas></div>
-        <div class="chart-card"><div class="chart-title"><i class="fas fa-passport"></i> Jenis NIPER</div><canvas id="niperChart" class="chart-container"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Status Fasilitas (Semua)</div><canvas id="statusChart" class="chart-container"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Top Sektor Industri</div><canvas id="sektorChart" class="chart-container"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Kantor Pengawas</div><canvas id="wilayahChart" class="chart-container"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Jenis NIPER (Semua)</div><canvas id="niperChart" class="chart-container"></canvas></div>
+    </div>
+    
+    <!-- Diagram Perusahaan AKTIF berdasarkan Jenis NIPER -->
+    <div class="charts-row">
+        <div class="chart-card full-width" style="grid-column: 1 / -1;">
+            <div class="chart-title"><i class="fas fa-chart-simple"></i> Jumlah Perusahaan AKTIF: PEMBEBASAN vs PENGEMBALIAN</div>
+            <canvas id="aktifNiperChart" style="width:100%; height:300px;"></canvas>
+        </div>
     </div>
     
     <div class="search-bar">
@@ -82,72 +113,34 @@
     </div>
     
     <div class="table-wrapper">
-         <table>
+        <table id="dataTable">
             <thead>
-                <tr><th>Nama Perusahaan</th><th>Kantor Pengawas</th><th>Jenis NIPER</th><th>Status</th><th>Sektor Industri</th><th>SKEP Awal</th><th>Aksi</th></tr>
+                <tr><th>Nama Perusahaan</th><th>Kantor Pengawas</th><th>Jenis NIPER</th><th>Status</th><th>Sektor Industri</th><th>SKEP Awal</th><th class="action-cell" id="actionHeader">Aksi</th></tr>
             </thead>
-            <tbody id="tableBody"><tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-pulse"></i> Mengambil data...</td></tr></tbody>
-         </table>
+            <tbody id="tableBody"><tr><td colspan="7" class="loading">Mengambil data...</td></tr></tbody>
+        </table>
     </div>
-    
-    <footer>
-        <i class="fas fa-info-circle"></i> Klik nama perusahaan untuk detail lengkap. 
-        Edit/Hapus/Tambah password: <strong>rahasia123</strong> | Data tersimpan ke Google Sheets
-    </footer>
+    <footer><i class="fas fa-chart-line"></i> Dashboard KITE - Data perusahaan fasilitas impor tujuan ekspor</footer>
 </div>
 
 <!-- Modal Detail -->
-<div id="detailModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="detailTitle"><i class="fas fa-building"></i> Detail Perusahaan</h2>
-            <span class="close" onclick="closeModal('detailModal')">&times;</span>
-        </div>
-        <div id="detailContent" class="form-grid"></div>
-    </div>
-</div>
+<div id="detailModal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="detailTitle">Detail</h2><span class="close" onclick="closeModal('detailModal')">&times;</span></div><div id="detailContent" class="form-grid"></div></div></div>
 
 <!-- Modal Form -->
-<div id="formModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="formTitle">Tambah Data Perusahaan</h2>
-            <span class="close" onclick="closeModal('formModal')">&times;</span>
-        </div>
-        <div id="formFields" class="form-grid"></div>
-        <div class="action-buttons">
-            <button class="btn" id="saveBtn">Simpan</button>
-            <button class="btn btn-danger" onclick="closeModal('formModal')">Batal</button>
-        </div>
-    </div>
-</div>
+<div id="formModal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="formTitle">Form</h2><span class="close" onclick="closeModal('formModal')">&times;</span></div><div id="formFields" class="form-grid"></div><div class="action-buttons"><button class="btn" id="saveBtn">Simpan</button><button class="btn btn-danger" onclick="closeModal('formModal')">Batal</button></div></div></div>
 
 <!-- Modal Password -->
-<div id="passwordModal" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
-        <div class="modal-header">
-            <h2><i class="fas fa-lock"></i> Verifikasi Password</h2>
-            <span class="close" onclick="closeModal('passwordModal')">&times;</span>
-        </div>
-        <div class="form-field">
-            <label>Password Admin</label>
-            <input type="password" id="adminPassword" placeholder="Masukkan password" onkeypress="if(event.key==='Enter') verifyPassword()">
-        </div>
-        <div class="action-buttons">
-            <button class="btn" id="verifyPasswordBtn">Verifikasi</button>
-        </div>
-    </div>
-</div>
+<div id="passwordModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Verifikasi Password</h2><span class="close" onclick="closeModal('passwordModal')">&times;</span></div><div class="form-field"><label>Password</label><input type="password" id="adminPassword" placeholder="Masukkan password" onkeypress="if(event.key==='Enter') verifyPassword()"></div><div class="action-buttons"><button class="btn" id="verifyPasswordBtn">Verifikasi</button></div></div></div>
 
 <script>
-    // ⚠️ GANTI URL INI DENGAN WEB APP ANDA ⚠️
+    // ================= KONFIGURASI =================
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbztABNwaMf7vmMkph_0p9KwzSx3AGJydVBG1owOPrnV85tfbm04q13UmfRG25Obe1Wr/exec";
     const ADMIN_PASSWORD = "rahasia123";
     
-    let allData = [];
-    let charts = {};
-    let currentEditIndex = null;
-    let pendingCallback = null;
+    let allData = [], charts = {};
+    let currentEditIndex = null, pendingCallback = null;
+    let isEditModeActive = false;
+    let isPasswordVerifiedForSession = false;
     
     const ALL_COLUMNS = ["No","NPWP","Nama Perusahaan","Kantor Pengawas","Jenis NIPER","SKEP","Tanggal","SKEP PERUBAHAN TERAKHIR","Tanggal SKEP Perubahan Terakhir","NIB","Alamat Perusahaan","Nama Penanggung Jawab","Contact Perusahaan","Alamat Pabrik","Provinsi","Bidang Usaha Industri","Sektor Industri","Pengelompokan Bidang Usaha Industri","Hasil Produksi","KLU","Nama KLU","Golpok","Badan Usaha Penerima Subkon","Tahapan Kegiatan Produksi","CG","MITA","AEO","Riwayat Audit","Status","Tgl Beku","Tgl Cabut","History Beku","Pencabutan","Keterangan"];
     
@@ -163,96 +156,213 @@
         } else if (rowIndex !== null) {
             params.append("data", JSON.stringify({ _rowIndex: rowIndex }));
         }
-        
         try {
-            const response = await fetch(`${WEB_APP_URL}?${params.toString()}`, { method: "GET", mode: "cors" });
-            return await response.json();
-        } catch (error) {
-            console.error("Fetch error:", error);
-            return { success: false, message: error.message };
-        }
+            const res = await fetch(`${WEB_APP_URL}?${params.toString()}`, { method: "GET" });
+            return await res.json();
+        } catch (e) { return { success: false, message: e.message }; }
     }
     
     async function loadData() {
-        const result = await callApi("getData");
-        if (result.success && result.data) {
-            allData = result.data;
+        const res = await callApi("getData");
+        if (res.success && res.data) {
+            allData = res.data;
             renderAll();
-            updateConnectionStatus(true, `Tersambung (${allData.length} data)`);
+            document.getElementById("connectionStatus").className = "status-connected";
+            document.getElementById("connectionStatus").innerHTML = `<i class="fas fa-check-circle"></i> Tersambung (${allData.length})`;
         } else {
-            updateConnectionStatus(false, result.message || "Gagal koneksi");
-            document.getElementById("tableBody").innerHTML = `<tr><td colspan="7" class="loading" style="color:#dc2626;">Error: ${result.message}<br>Pastikan URL Web App sudah benar</td></tr>`;
+            document.getElementById("connectionStatus").className = "status-disconnected";
+            document.getElementById("connectionStatus").innerHTML = `<i class="fas fa-exclamation-triangle"></i> Gagal: ${res.message || "Error"}`;
+            document.getElementById("tableBody").innerHTML = `<tr><td colspan="7" class="loading" style="color:#dc2626;">Error: ${res.message}<br>Pastikan URL Web App sudah benar dan sudah di-deploy dengan access "Anyone"</td></tr>`;
         }
     }
     
-    function updateConnectionStatus(ok, msg) {
-        const el = document.getElementById("connectionStatus");
-        el.className = ok ? "status-connected" : "status-disconnected";
-        el.innerHTML = ok ? `<i class="fas fa-check-circle"></i> ${msg}` : `<i class="fas fa-exclamation-triangle"></i> ${msg}`;
+    function getAktifByNiper() {
+        const aktif = allData.filter(d => d.Status === "Aktif");
+        const pembebasan = aktif.filter(d => d["Jenis NIPER"] === "PEMBEBASAN").length;
+        const pengembalian = aktif.filter(d => d["Jenis NIPER"] === "PENGEMBALIAN").length;
+        return { pembebasan, pengembalian, totalAktif: aktif.length };
     }
     
     function renderStats() {
-        const aktif = allData.filter(d => d.Status === "Aktif").length;
-        const cabut = allData.filter(d => d.Status === "Cabut").length;
-        const beku = allData.filter(d => d.Status === "Beku").length;
+        let aktif = allData.filter(d=>d.Status==="Aktif").length;
+        let cabut = allData.filter(d=>d.Status==="Cabut").length;
+        let beku = allData.filter(d=>d.Status==="Beku").length;
         document.getElementById("statsCards").innerHTML = `
-            <div class="stat-card"><div><h3>Total</h3><div class="stat-number">${allData.length}</div></div><i class="fas fa-building fa-2x"></i></div>
-            <div class="stat-card"><div><h3>Aktif</h3><div class="stat-number">${aktif}</div></div><i class="fas fa-check-circle fa-2x" style="color:#2ecc71;"></i></div>
-            <div class="stat-card"><div><h3>Cabut</h3><div class="stat-number">${cabut}</div></div><i class="fas fa-ban fa-2x" style="color:#e74c3c;"></i></div>
-            <div class="stat-card"><div><h3>Beku</h3><div class="stat-number">${beku}</div></div><i class="fas fa-hourglass-half fa-2x" style="color:#f39c12;"></i></div>`;
+            <div class="stat-card"><div><h3>Total Perusahaan</h3><div class="stat-number">${allData.length}</div></div><i class="fas fa-building fa-2x"></i></div>
+            <div class="stat-card highlight-stat"><div><h3>✅ AKTIF</h3><div class="stat-number">${aktif}</div></div><i class="fas fa-check-circle fa-2x" style="color:#2ecc71;"></i></div>
+            <div class="stat-card"><div><h3>❌ Cabut</h3><div class="stat-number">${cabut}</div></div><i class="fas fa-ban fa-2x" style="color:#e74c3c;"></i></div>
+            <div class="stat-card"><div><h3>⏸️ Beku</h3><div class="stat-number">${beku}</div></div><i class="fas fa-hourglass-half fa-2x" style="color:#f39c12;"></i></div>`;
+    }
+    
+    function renderAktifNiperStats() {
+        const { pembebasan, pengembalian, totalAktif } = getAktifByNiper();
+        document.getElementById("aktifNiperStats").innerHTML = `
+            <div class="stat-card" style="background:#ecfdf5;"><div><h3>📊 AKTIF: PEMBEBASAN</h3><div class="stat-number">${pembebasan}</div><small>${totalAktif>0 ? Math.round(pembebasan/totalAktif*100)+'% dari total aktif' : '0%'}</small></div><i class="fas fa-unlock-alt fa-2x" style="color:#059669;"></i></div>
+            <div class="stat-card" style="background:#fffbeb;"><div><h3>📊 AKTIF: PENGEMBALIAN</h3><div class="stat-number">${pengembalian}</div><small>${totalAktif>0 ? Math.round(pengembalian/totalAktif*100)+'% dari total aktif' : '0%'}</small></div><i class="fas fa-undo-alt fa-2x" style="color:#d97706;"></i></div>
+            <div class="stat-card"><div><h3>📊 Total AKTIF</h3><div class="stat-number">${totalAktif}</div></div><i class="fas fa-chart-line fa-2x" style="color:#3b82f6;"></i></div>
+        `;
     }
     
     function renderTable(filter = "") {
-        const filtered = allData.filter(d => 
-            (d["Nama Perusahaan"] || "").toLowerCase().includes(filter.toLowerCase()) ||
-            (d["Kantor Pengawas"] || "").toLowerCase().includes(filter.toLowerCase()));
-        
-        if (filtered.length === 0) {
-            document.getElementById("tableBody").innerHTML = '<tr><td colspan="7" class="loading">Tidak ada data</td></tr>';
-            return;
-        }
+        let filtered = allData.filter(d => (d["Nama Perusahaan"]||"").toLowerCase().includes(filter.toLowerCase()) || (d["Kantor Pengawas"]||"").toLowerCase().includes(filter.toLowerCase()));
+        if (filtered.length === 0) { document.getElementById("tableBody").innerHTML = '<tr><td colspan="7" class="loading">Tidak ada data</td></td>'; return; }
         
         document.getElementById("tableBody").innerHTML = filtered.map((d, idx) => {
-            const oidx = allData.findIndex(x => x["Nama Perusahaan"] === d["Nama Perusahaan"]);
+            let oidx = allData.findIndex(x => x["Nama Perusahaan"] === d["Nama Perusahaan"]);
             let sc = d.Status === "Aktif" ? "badge-aktif" : (d.Status === "Cabut" ? "badge-cabut" : "badge-beku");
+            
+            // Tampilkan tombol aksi hanya jika edit mode aktif
+            let actionButtons = '';
+            if (isEditModeActive && isPasswordVerifiedForSession) {
+                actionButtons = `
+                    <button class="btn" style="padding:4px 12px; background:#3b82f6;" onclick='event.stopPropagation(); editData(${oidx})'>Edit</button>
+                    <button class="btn" style="padding:4px 12px; background:#dc2626;" onclick='event.stopPropagation(); confirmDelete(${oidx})'>Hapus</button>
+                `;
+            } else if (isEditModeActive && !isPasswordVerifiedForSession) {
+                actionButtons = `<button class="btn" style="padding:4px 12px; background:#94a3b8;" onclick='event.stopPropagation(); requestEditModePassword()'>🔒 Verifikasi</button>`;
+            } else {
+                actionButtons = `<span style="color:#94a3b8; font-size:0.7rem;"><i class="fas fa-lock"></i> Nonaktif</span>`;
+            }
+            
             return `<tr>
-                <td style="color:#2b6cb0;text-decoration:underline;cursor:pointer;" onclick='showDetail(${JSON.stringify(d).replace(/'/g, "&#39;")})'>${escapeHtml(d["Nama Perusahaan"]||"-")}</td>
+                <td style="color:#2b6cb0;text-decoration:underline;cursor:pointer;" onclick='showDetail(${JSON.stringify(d).replace(/'/g,"&#39;")})'>${escapeHtml(d["Nama Perusahaan"]||"-")}</td>
                 <td>${escapeHtml(d["Kantor Pengawas"]||"-")}</td>
                 <td>${escapeHtml(d["Jenis NIPER"]||"-")}</td>
                 <td><span class="badge ${sc}">${d.Status||"-"}</span></td>
                 <td>${escapeHtml((d["Sektor Industri"]||"").substring(0,35))}</td>
                 <td>${escapeHtml(d["SKEP"]||"-")}</td>
-                <td>
-                    <button class="btn" style="padding:4px 12px;" onclick='event.stopPropagation(); editData(${oidx})'>Edit</button>
-                    <button class="btn btn-danger" style="padding:4px 12px;" onclick='event.stopPropagation(); confirmDelete(${oidx})'>Hapus</button>
-                </td>
+                <td class="action-cell">${actionButtons}</td>
             </tr>`;
         }).join("");
     }
     
     function updateCharts() {
-        const aktif = allData.filter(d=>d.Status==="Aktif").length, cabut = allData.filter(d=>d.Status==="Cabut").length, beku = allData.filter(d=>d.Status==="Beku").length;
+        let aktif = allData.filter(d=>d.Status==="Aktif").length, cabut = allData.filter(d=>d.Status==="Cabut").length, beku = allData.filter(d=>d.Status==="Beku").length;
         if(charts.status) charts.status.destroy();
-        charts.status = new Chart(document.getElementById("statusChart"), { type:'pie', data:{ labels:['Aktif','Cabut','Beku'], datasets:[{ data:[aktif,cabut,beku], backgroundColor:['#2ecc71','#e74c3c','#f39c12'] }] }, options:{ plugins:{ datalabels:{ color:'white', formatter:(v)=>v } }, responsive:true }, plugins:[ChartDataLabels] });
+        charts.status = new Chart(document.getElementById("statusChart"), { type:'pie', data:{ labels:['Aktif','Cabut','Beku'], datasets:[{ data:[aktif,cabut,beku], backgroundColor:['#2ecc71','#e74c3c','#f39c12'] }] }, options:{ plugins:{ datalabels:{ color:'white', formatter:v=>v } }, responsive:true }, plugins:[ChartDataLabels] });
         
-        const sektorMap = new Map();
+        let sektorMap = new Map();
         allData.forEach(d=>{ let s=(d["Sektor Industri"]||"").split(",")[0]; if(s) sektorMap.set(s,(sektorMap.get(s)||0)+1); });
-        const topSektor = Array.from(sektorMap.entries()).sort((a,b)=>b[1]-a[1]).slice(0,4);
+        let topSektor = Array.from(sektorMap.entries()).sort((a,b)=>b[1]-a[1]).slice(0,4);
         if(charts.sektor) charts.sektor.destroy();
-        charts.sektor = new Chart(document.getElementById("sektorChart"), { type:'bar', data:{ labels:topSektor.map(s=>s[0].length>20?s[0].substring(0,17)+"...":s[0]), datasets:[{ label:'Jumlah', data:topSektor.map(s=>s[1]), backgroundColor:'#3b82f6' }] }, options:{ indexAxis:'y', plugins:{ datalabels:{ anchor:'end', align:'right', formatter:(v)=>v } }, responsive:true }, plugins:[ChartDataLabels] });
+        charts.sektor = new Chart(document.getElementById("sektorChart"), { type:'bar', data:{ labels:topSektor.map(s=>s[0].length>20?s[0].substring(0,17)+"...":s[0]), datasets:[{ label:'Jumlah', data:topSektor.map(s=>s[1]), backgroundColor:'#3b82f6' }] }, options:{ indexAxis:'y', plugins:{ datalabels:{ anchor:'end', align:'right', formatter:v=>v } }, responsive:true }, plugins:[ChartDataLabels] });
         
-        const wilayahMap = new Map();
+        let wilayahMap = new Map();
         allData.forEach(d=>wilayahMap.set(d["Kantor Pengawas"],(wilayahMap.get(d["Kantor Pengawas"])||0)+1));
-        const topWilayah = Array.from(wilayahMap.entries()).sort((a,b)=>b[1]-a[1]).slice(0,6);
+        let topWilayah = Array.from(wilayahMap.entries()).sort((a,b)=>b[1]-a[1]).slice(0,6);
         if(charts.wilayah) charts.wilayah.destroy();
-        charts.wilayah = new Chart(document.getElementById("wilayahChart"), { type:'bar', data:{ labels:topWilayah.map(w=>w[0]), datasets:[{ label:'Perusahaan', data:topWilayah.map(w=>w[1]), backgroundColor:'#10b981' }] }, options:{ plugins:{ datalabels:{ anchor:'end', align:'top', formatter:(v)=>v } }, responsive:true }, plugins:[ChartDataLabels] });
+        charts.wilayah = new Chart(document.getElementById("wilayahChart"), { type:'bar', data:{ labels:topWilayah.map(w=>w[0]), datasets:[{ label:'Perusahaan', data:topWilayah.map(w=>w[1]), backgroundColor:'#10b981' }] }, options:{ plugins:{ datalabels:{ anchor:'end', align:'top', formatter:v=>v } }, responsive:true }, plugins:[ChartDataLabels] });
         
-        const pembebasan = allData.filter(d=>d["Jenis NIPER"]==="PEMBEBASAN").length, pengembalian = allData.filter(d=>d["Jenis NIPER"]==="PENGEMBALIAN").length;
+        let pembebasan = allData.filter(d=>d["Jenis NIPER"]==="PEMBEBASAN").length, pengembalian = allData.filter(d=>d["Jenis NIPER"]==="PENGEMBALIAN").length;
         if(charts.niper) charts.niper.destroy();
-        charts.niper = new Chart(document.getElementById("niperChart"), { type:'doughnut', data:{ labels:['Pembebasan','Pengembalian'], datasets:[{ data:[pembebasan,pengembalian], backgroundColor:['#4f46e5','#ec489a'] }] }, options:{ plugins:{ datalabels:{ color:'white', formatter:(v)=>v } }, responsive:true }, plugins:[ChartDataLabels] });
+        charts.niper = new Chart(document.getElementById("niperChart"), { type:'doughnut', data:{ labels:['Pembebasan','Pengembalian'], datasets:[{ data:[pembebasan,pengembalian], backgroundColor:['#4f46e5','#ec489a'] }] }, options:{ plugins:{ datalabels:{ color:'white', formatter:v=>v } }, responsive:true }, plugins:[ChartDataLabels] });
+        
+        const aktifCounts = getAktifByNiper();
+        if(charts.aktifNiper) charts.aktifNiper.destroy();
+        const ctx = document.getElementById('aktifNiperChart').getContext('2d');
+        charts.aktifNiper = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: ['PEMBEBASAN', 'PENGEMBALIAN'], datasets: [{ label: 'Jumlah Perusahaan Aktif', data: [aktifCounts.pembebasan, aktifCounts.pengembalian], backgroundColor: ['#059669', '#d97706'], borderRadius: 8, barPercentage: 0.6 }] },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { datalabels: { anchor: 'end', align: 'top', color: '#1e293b', fontWeight: 'bold', formatter: (val) => val }, legend: { position: 'top' } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Jumlah Perusahaan' } }, x: { title: { display: true, text: 'Jenis NIPER' } } } },
+            plugins: [ChartDataLabels]
+        });
     }
     
-    function renderAll() { renderStats(); renderTable(document.getElementById("searchInput").value); updateCharts(); }
+    function renderAll() { 
+        renderStats(); 
+        renderAktifNiperStats();
+        renderTable(document.getElementById("searchInput").value); 
+        updateCharts(); 
+    }
+    
+    // ================= FITUR EDIT MODE =================
+    function toggleEditMode() {
+        const toggle = document.getElementById("editModeToggle");
+        const statusSpan = document.getElementById("editModeStatus");
+        const container = document.getElementById("editModeContainer");
+        
+        if (toggle.checked) {
+            // Minta password untuk mengaktifkan edit mode
+            showEditModePasswordModal();
+        } else {
+            // Nonaktifkan edit mode
+            isEditModeActive = false;
+            isPasswordVerifiedForSession = false;
+            statusSpan.innerHTML = "(Nonaktif)";
+            statusSpan.style.color = "#64748b";
+            container.classList.remove("edit-mode-active");
+            container.classList.add("edit-mode-inactive");
+            renderTable(document.getElementById("searchInput").value);
+        }
+    }
+    
+    function showEditModePasswordModal() {
+        const modal = document.getElementById("passwordModal");
+        const title = modal.querySelector(".modal-header h2");
+        const originalTitle = title.innerHTML;
+        title.innerHTML = "<i class='fas fa-lock'></i> Aktifkan Mode Edit";
+        
+        // Simpan callback asli sementara
+        const originalVerify = window.verifyPassword;
+        
+        window.verifyPassword = () => {
+            const pwd = document.getElementById("adminPassword").value;
+            if (pwd === ADMIN_PASSWORD) {
+                isEditModeActive = true;
+                isPasswordVerifiedForSession = true;
+                localStorage.setItem("kite_password", pwd);
+                updateEditModeUI(true);
+                closeModal("passwordModal");
+                renderTable(document.getElementById("searchInput").value);
+            } else {
+                alert("Password salah! Mode edit tidak dapat diaktifkan.");
+                // Matikan toggle
+                document.getElementById("editModeToggle").checked = false;
+                isEditModeActive = false;
+                isPasswordVerifiedForSession = false;
+                updateEditModeUI(false);
+            }
+            document.getElementById("adminPassword").value = "";
+            // Kembalikan fungsi verify
+            window.verifyPassword = originalVerify;
+            title.innerHTML = originalTitle;
+        };
+        
+        document.getElementById("verifyPasswordBtn").onclick = () => { window.verifyPassword(); };
+        modal.style.display = "flex";
+        
+        // Reset jika modal ditutup tanpa verifikasi
+        const closeHandler = () => {
+            if (!isEditModeActive) {
+                document.getElementById("editModeToggle").checked = false;
+                updateEditModeUI(false);
+            }
+            window.verifyPassword = originalVerify;
+            title.innerHTML = originalTitle;
+            modal.removeEventListener("click", closeHandler);
+        };
+        modal.querySelector(".close").onclick = closeHandler;
+    }
+    
+    function updateEditModeUI(active) {
+        const statusSpan = document.getElementById("editModeStatus");
+        const container = document.getElementById("editModeContainer");
+        if (active) {
+            statusSpan.innerHTML = "(Aktif)";
+            statusSpan.style.color = "#15803d";
+            container.classList.add("edit-mode-active");
+            container.classList.remove("edit-mode-inactive");
+        } else {
+            statusSpan.innerHTML = "(Nonaktif)";
+            statusSpan.style.color = "#64748b";
+            container.classList.add("edit-mode-inactive");
+            container.classList.remove("edit-mode-active");
+        }
+    }
+    
+    function requestEditModePassword() {
+        showEditModePasswordModal();
+    }
     
     function showDetail(data) {
         document.getElementById("detailContent").innerHTML = ALL_COLUMNS.map(c=>`<div class="form-field"><label>${c}</label><div><strong>${escapeHtml(data[c]||"-")}</strong></div></div>`).join("");
@@ -265,28 +375,33 @@
         document.getElementById("formFields").innerHTML = ALL_COLUMNS.map(c=>`<div class="form-field"><label>${c}</label><input type="text" id="f_${c.replace(/\s/g,'_')}" value="${escapeHtml(data ? (data[c]||"") : "")}"></div>`).join("");
         document.getElementById("formModal").style.display = "flex";
         document.getElementById("saveBtn").onclick = async () => {
-            const newData = {};
+            let newData = {};
             ALL_COLUMNS.forEach(c=>{ newData[c] = document.getElementById(`f_${c.replace(/\s/g,'_')}`).value; });
-            const res = await callApi(isEdit ? "update" : "add", newData, rowIndex);
+            let res = await callApi(isEdit ? "update" : "add", newData, rowIndex);
             if(res.success) { await loadData(); alert(res.message); closeModal("formModal"); }
             else alert("Gagal: "+res.message);
         };
     }
     
-    async function editData(idx) { showPasswordModal(()=>openFormModal(allData[idx], true, allData[idx]._id)); }
-    async function confirmDelete(idx) { showPasswordModal(async ()=>{ const res = await callApi("delete", null, allData[idx]._id); if(res.success) { await loadData(); alert(res.message); } else alert("Gagal: "+res.message); closeModal("passwordModal"); }); }
-    function openAddData() { showPasswordModal(()=>openFormModal(null, false, null)); }
+    function editData(idx) { openFormModal(allData[idx], true, allData[idx]._id); }
+    function confirmDelete(idx) { if(confirm("Yakin hapus data ini?")) { callApi("delete", null, allData[idx]._id).then(async (res) => { if(res.success) { await loadData(); alert(res.message); } else alert("Gagal: "+res.message); }); } }
+    function openAddData() { openFormModal(null, false, null); }
     
-    function showPasswordModal(cb) { pendingCallback = cb; document.getElementById("passwordModal").style.display = "flex"; document.getElementById("adminPassword").value = ""; }
-    function verifyPassword() { if(document.getElementById("adminPassword").value === ADMIN_PASSWORD) { localStorage.setItem("kite_password", ADMIN_PASSWORD); closeModal("passwordModal"); if(pendingCallback) pendingCallback(); pendingCallback=null; } else alert("Password salah!"); }
+    function verifyPassword() { /* placeholder - overridden */ }
     function closeModal(id) { document.getElementById(id).style.display = "none"; }
-    function escapeHtml(s) { if(!s) return ""; return String(s).replace(/[&<>]/g, (m)=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+    function escapeHtml(s) { if(!s) return ""; return String(s).replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
     
-    document.getElementById("openAddBtn").onclick = openAddData;
+    // Event Listeners
     document.getElementById("refreshBtn").onclick = loadData;
-    document.getElementById("searchInput").oninput = (e)=>renderTable(e.target.value);
-    document.getElementById("verifyPasswordBtn").onclick = verifyPassword;
-    window.onclick = (e)=>{ if(e.target.classList.contains("modal")) e.target.style.display = "none"; };
+    document.getElementById("openAddBtn").onclick = () => { if(isEditModeActive && isPasswordVerifiedForSession) openAddData(); else showEditModePasswordModal(); };
+    document.getElementById("searchInput").oninput = e=>renderTable(e.target.value);
+    document.getElementById("editModeToggle").onchange = toggleEditMode;
+    window.onclick = e=>{ if(e.target.classList.contains("modal")) e.target.style.display = "none"; };
+    
+    // Inisialisasi: edit mode nonaktif
+    isEditModeActive = false;
+    isPasswordVerifiedForSession = false;
+    updateEditModeUI(false);
     
     loadData();
 </script>
