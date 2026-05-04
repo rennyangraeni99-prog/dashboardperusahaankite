@@ -141,8 +141,8 @@
 
 <script>
     // ================= ⚠️ GANTI URL INI DENGAN WEB APP ANDA ⚠️ =================
-    // Contoh: const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz_xxxxxxxxxxxx/exec";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxiakbdgfiFiDwyeJLiNRvmAWr_Q2-rhmkNqHJtAw4skxsn5yRShvlph8O9XG84-XKJ/exec";
+    // Contoh: const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwzLmN3x7QpR9tUvW2xYz4aBcD5eFgHiJkLmNoP/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbztABNwaMf7vmMkph_0p9KwzSx3AGJydVBG1owOPrnV85tfbm04q13UmfRG25Obe1Wr/exec";
     const ADMIN_PASSWORD = "rahasia123";
     
     let allData = [];
@@ -184,8 +184,7 @@
         } else {
             updateConnectionStatus(false, result.message || "Gagal koneksi");
             let errMsg = result.message || "Unknown error";
-            if (errMsg.includes("Failed to fetch")) errMsg = "Tidak dapat terhubung ke Google Apps Script. Pastikan URL sudah benar dan Web App sudah di-deploy.";
-            document.getElementById("tableBody").innerHTML = `<tr><td colspan="7" class="loading" style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Error: ${errMsg}<br><br>🔧 Solusi:<br>1. Buka Apps Script dan deploy ulang Web App<br>2. Pastikan access = "Anyone"<br>3. Ganti URL di file HTML dengan URL yang baru<br>4. Upload ulang file HTML ke GitHub</td></tr>`;
+            document.getElementById("tableBody").innerHTML = `<table><td colspan="7" class="loading" style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Error: ${errMsg}<br><br>Pastikan:<br>1. Web App sudah di-deploy dengan access "Anyone"<br>2. URL di file HTML sudah diganti dengan URL Web App Anda<br>3. Nama sheet di Apps Script sesuai dengan sheet di Google Sheets</td></tr>`;
         }
     }
     
