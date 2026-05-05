@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KITE Dashboard - Chart Ukuran Tetap</title>
+    <title>KITE Dashboard - Ukuran Chart Proporsional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -20,14 +20,53 @@
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 24px; }
         .stat-card { background: white; border-radius: 24px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e9edf2; }
         .stat-number { font-size: 1.7rem; font-weight: 800; color: #1e293b; }
-        .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .chart-card { background: white; border-radius: 22px; padding: 12px; border: 1px solid #e9edf2; }
-        .chart-title { font-weight: 600; margin-bottom: 8px; border-left: 4px solid #3b82f6; padding-left: 10px; font-size: 0.9rem; }
-        /* UKURAN CANVAS DIATUR TETAP, TIDAK BERUBAH */
-        .chart-container-pie { width: 100%; height: 220px; }
-        .chart-container-bar { width: 100%; height: 350px; }  /* Tinggi tetap untuk bar chart */
-        .chart-container-horizontal { width: 100%; height: 400px; } /* Tinggi tetap */
-        .chart-container-doughnut { width: 100%; height: 220px; }
+        
+        /* GRID CHART - 2x2 dengan ukuran proporsional */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 22px;
+            padding: 16px;
+            border: 1px solid #e9edf2;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 12px;
+            font-size: 0.95rem;
+        }
+        /* Container chart dengan rasio yang baik */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            min-height: 280px;
+            flex: 1;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            max-height: 280px;
+        }
+        
+        /* Untuk chart horizontal (Kantor Pengawas) bisa lebih tinggi */
+        .chart-wrapper-horizontal {
+            position: relative;
+            width: 100%;
+            min-height: 350px;
+            flex: 1;
+        }
+        .chart-wrapper-horizontal canvas {
+            max-height: 350px;
+        }
+        
         .search-bar { background: white; padding: 8px 16px; border-radius: 50px; border: 1px solid #ccc; display: flex; gap: 10px; margin-bottom: 16px; }
         .search-bar input { flex: 1; border: none; outline: none; }
         .table-wrapper { overflow-x: auto; background: white; border-radius: 20px; border: 1px solid #e9edf2; }
@@ -67,6 +106,10 @@
         .edit-mode-active { background: #dcfce7; color: #15803d; border: 1px solid #15803d; }
         .edit-mode-inactive { background: #f1f5f9; color: #64748b; }
         .action-cell { min-width: 100px; }
+        
+        @media (max-width: 900px) {
+            .charts-row { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -93,11 +136,32 @@
     <!-- Baris Statistik Utama -->
     <div class="stats-grid" id="statsCards"></div>
     
+    <!-- Chart Grid 2x2 -->
     <div class="charts-row">
-        <div class="chart-card"><div class="chart-title">Status Fasilitas (Semua Data)</div><canvas id="statusChart" class="chart-container-pie"></canvas></div>
-        <div class="chart-card"><div class="chart-title">Top 10 Sektor Industri (Hanya Aktif)</div><canvas id="sektorChart" class="chart-container-bar"></canvas></div>
-        <div class="chart-card"><div class="chart-title">Kantor Pengawas (Hanya Aktif - Horizontal)</div><canvas id="wilayahChart" class="chart-container-horizontal"></canvas></div>
-        <div class="chart-card"><div class="chart-title">Jenis NIPER (Hanya Aktif)</div><canvas id="niperChart" class="chart-container-doughnut"></canvas></div>
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Status Fasilitas (Semua Data)</div>
+            <div class="chart-wrapper">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-simple"></i> Top 5 Sektor Industri (Hanya Aktif)</div>
+            <div class="chart-wrapper">
+                <canvas id="sektorChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-map-marker-alt"></i> Kantor Pengawas (Hanya Aktif - Horizontal)</div>
+            <div class="chart-wrapper-horizontal">
+                <canvas id="wilayahChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-passport"></i> Jenis NIPER (Hanya Aktif)</div>
+            <div class="chart-wrapper">
+                <canvas id="niperChart"></canvas>
+            </div>
+        </div>
     </div>
     
     <div class="search-bar">
@@ -110,7 +174,7 @@
             <thead>
                 <tr><th>Nama Perusahaan</th><th>Kantor Pengawas</th><th>Jenis NIPER</th><th>Status</th><th>Sektor Industri</th><th>SKEP Awal</th><th class="action-cell">Aksi</th></tr>
             </thead>
-            <tbody id="tableBody"><tr><td colspan="7" class="loading">Mengambil data...</tr>加上</tbody>
+            <tbody id="tableBody"><tr><td colspan="7" class="loading">Mengambil data...</td></tr></tbody>
         </table>
     </div>
     <footer><i class="fas fa-chart-line"></i> Dashboard KITE - Tabel: Semua Status | Grafik: Hanya Data Aktif</footer>
@@ -166,7 +230,7 @@
         } else {
             document.getElementById("connectionStatus").className = "status-disconnected";
             document.getElementById("connectionStatus").innerHTML = `<i class="fas fa-exclamation-triangle"></i> Gagal: ${res.message || "Error"}`;
-            document.getElementById("tableBody").innerHTML = `<tr><td colspan="7" class="loading" style="color:#dc2626;">Error: ${res.message}<br>Pastikan URL Web App sudah benar</tr>加上`;
+            document.getElementById("tableBody").innerHTML = `<tr><td colspan="7" class="loading" style="color:#dc2626;">Error: ${res.message}<br>Pastikan URL Web App sudah benar</td></tr>`;
         }
     }
     
@@ -188,7 +252,7 @@
             (d["SKEP"]||"").toLowerCase().includes(filter.toLowerCase()));
         
         if (filtered.length === 0) { 
-            document.getElementById("tableBody").innerHTML = '<tr><td colspan="7" class="loading">Tidak ada data</tr>加上'; 
+            document.getElementById("tableBody").innerHTML = '<tr><td colspan="7" class="loading">Tidak ada data</td></tr>'; 
             return; 
         }
         
@@ -216,7 +280,7 @@
                 <td>${escapeHtml((d["Sektor Industri"]||"").substring(0,35))}</td>
                 <td>${escapeHtml(d["SKEP"]||"-")}</td>
                 <td class="action-cell">${actionButtons}</td>
-            <tr>`;
+            </tr>`;
         }).join("");
     }
     
@@ -229,27 +293,26 @@
         charts.status = new Chart(document.getElementById("statusChart"), { 
             type:'pie', 
             data:{ labels:['Aktif','Cabut','Beku'], datasets:[{ data:[aktif,cabut,beku], backgroundColor:['#2ecc71','#e74c3c','#f39c12'] }] }, 
-            options:{ responsive:true, maintainAspectRatio:true, plugins:{ datalabels:{ color:'white', formatter:v=>v } } }, 
+            options:{ responsive:true, maintainAspectRatio:true, plugins:{ datalabels:{ color:'white', font:{weight:'bold', size:14}, formatter:v=>v } }, layout:{ padding:10 } }, 
             plugins:[ChartDataLabels] 
         });
         
-        // 2. Top 10 Sektor Industri - Bar Horizontal (ukuran canvas FIXED)
+        // 2. Top 5 Sektor Industri - Bar Horizontal
         let sektorMap = new Map();
         aktifData.forEach(d=>{ 
             let s = (d["Sektor Industri"]||"").split(",")[0]; 
             if(s && s !== "undefined" && s !== "") sektorMap.set(s, (sektorMap.get(s)||0)+1); 
         });
-        let topSektor = Array.from(sektorMap.entries()).sort((a,b)=>b[1]-a[1]).slice(0,10);
+        let topSektor = Array.from(sektorMap.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5);
         if(charts.sektor) charts.sektor.destroy();
-        // TIDAK mengubah tinggi canvas, biarkan CSS yang mengatur (height:350px fixed)
         charts.sektor = new Chart(document.getElementById("sektorChart"), { 
             type:'bar', 
-            data:{ labels:topSektor.map(s=>s[0].length>30?s[0].substring(0,27)+"...":s[0]), datasets:[{ label:'Jumlah Perusahaan Aktif', data:topSektor.map(s=>s[1]), backgroundColor:'#3b82f6', borderRadius:6 }] }, 
+            data:{ labels:topSektor.map(s=>s[0].length>25?s[0].substring(0,22)+"...":s[0]), datasets:[{ label:'Jumlah Perusahaan Aktif', data:topSektor.map(s=>s[1]), backgroundColor:'#3b82f6', borderRadius:6 }] }, 
             options:{ indexAxis:'y', responsive:true, maintainAspectRatio:true, plugins:{ datalabels:{ anchor:'end', align:'right', color:'#1e293b', fontWeight:'bold', formatter:v=>v } }, scales:{ x:{ beginAtZero:true, title:{ display:true, text:'Jumlah' } } } }, 
             plugins:[ChartDataLabels] 
         });
         
-        // 3. Chart Kantor Pengawas - Horizontal (tinggi FIXED)
+        // 3. Chart Kantor Pengawas - Horizontal
         let wilayahMap = new Map();
         aktifData.forEach(d => {
             let wilayah = d["Kantor Pengawas"] || "Tidak diketahui";
@@ -264,14 +327,14 @@
             plugins: [ChartDataLabels] 
         });
         
-        // 4. Chart Jenis NIPER - Doughnut (tinggi FIXED)
+        // 4. Chart Jenis NIPER - Doughnut
         let pembebasan = aktifData.filter(d=>d["Jenis NIPER"]==="PEMBEBASAN").length;
         let pengembalian = aktifData.filter(d=>d["Jenis NIPER"]==="PENGEMBALIAN").length;
         if(charts.niper) charts.niper.destroy();
         charts.niper = new Chart(document.getElementById("niperChart"), { 
             type:'doughnut', 
             data:{ labels:['Pembebasan','Pengembalian'], datasets:[{ data:[pembebasan,pengembalian], backgroundColor:['#4f46e5','#ec489a'] }] }, 
-            options:{ responsive:true, maintainAspectRatio:true, plugins:{ datalabels:{ color:'white', formatter:v=>v } } }, 
+            options:{ responsive:true, maintainAspectRatio:true, plugins:{ datalabels:{ color:'white', font:{weight:'bold', size:14}, formatter:v=>v } } }, 
             plugins:[ChartDataLabels] 
         });
     }
